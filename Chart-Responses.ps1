@@ -1,3 +1,18 @@
+<#
+.SYNOPSIS
+Use windows chart controls to plot score velocity response from log data
+.DESCRIPTION
+Using a log file from HardwareRevStationCoreHex, plot the target velocity and actual velocity
+.PARAMETER FileName
+CSV log file from Android (using DataLogger class)
+.PARAMETER Rows
+If CSV is already loaded into an array, use this array and don't load from file
+.PARAMETER Label
+Label for the chart; has a default
+.EXAMPLE
+Chart-Responses.ps1 -Label "Grey Station Right Motor PID= 30, 0.51, 10" -FileName .\logs\3\VelocitiesRight.csv
+#>
+
 Param ([object]$Rows = $null, `
        $FileName = "", `
        $Label = "Target V vs Actual V"
@@ -7,8 +22,9 @@ if ($Rows -eq $null) {
 	$Rows = Get-Content $FileName | ConvertFrom-Csv
 	}
 
-$boundaries = (@())
+# Assuming log file contains long spaces of all-zero data, find the boundaries of the non-zero data
 
+$boundaries = (@())
 for ($i=0; $i -lt $Rows.Length-1; $i++) {
 	$t1 = [math]::abs($rows[$i].target)
 	$t2 = [math]::abs($rows[$i+1].target)
@@ -19,12 +35,12 @@ for ($i=0; $i -lt $Rows.Length-1; $i++) {
 		}
 	}
 
+# Prepare chart
+
 $load1 = [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 $load2 = [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 if ($load1 -eq $null -or $load2 -eq $null) {throw "Requires Microsoft Chart Controls for Microsoft .NET Framework 3.5"}
-
 $Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
-
 $Chart.Width = 500
 $Chart.Height = 400
 $Chart.Left = 40
@@ -38,6 +54,8 @@ $Chart.Series["Actual"].ChartType = [System.Windows.Forms.DataVisualization.Char
 $Chart.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right -bor [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
 $Chart.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right -bor  [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
 
+# Add labels and legend
+
 [void]$Chart.Titles.Add($Label) 
 $ChartArea.AxisX.Title = "Time (sec)" 
 $ChartArea.AxisY.Title = "Velocity"
@@ -48,6 +66,8 @@ $Chart.Legends.Add($Legend)
 $Chart.Legends[0].Docking = "Bottom"
 $Chart.Legends[0].Font = (New-Object System.Drawing.Font -ArgumentList "Segui", "12")
 $Chart.Legends[0].Alignment = "Center"
+
+# for each non-zero region of log, make a plot of target V and actual V
 
 for ($i = 0; $i -lt $boundaries.Count; $i += 2) {
 
