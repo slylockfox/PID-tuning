@@ -1,6 +1,6 @@
 Param ([object]$Rows = $null, `
        $FileName = "", `
-       $Label = "Count of Score Differences"
+       $Label = "Target V vs Actual V"
        )
 
 if ($Rows -eq $null) {
@@ -18,8 +18,6 @@ for ($i=0; $i -lt $Rows.Length-1; $i++) {
 		$boundaries += $i
 		}
 	}
-	
-$boundaries
 
 $load1 = [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 $load2 = [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
@@ -33,23 +31,33 @@ $Chart.Left = 40
 $Chart.Top = 30
 $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
 $Chart.ChartAreas.Add($ChartArea)
-[void]$Chart.Series.Add("Data")
-$Chart.Series["Data"].ChartType = [System.Windows.Forms.DataVisualization.Charting.SeriesChartType]::Spline
+[void]$Chart.Series.Add("Target")
+$Chart.Series["Target"].ChartType = [System.Windows.Forms.DataVisualization.Charting.SeriesChartType]::Spline
+[void]$Chart.Series.Add("Actual")
+$Chart.Series["Actual"].ChartType = [System.Windows.Forms.DataVisualization.Charting.SeriesChartType]::Spline
 $Chart.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right -bor [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
 $Chart.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right -bor  [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
 
 $X = $rows[$boundaries[0]..$boundaries[1]].sec
-$Y = $rows[$boundaries[0]..$boundaries[1]].target
+$Y1 = $rows[$boundaries[0]..$boundaries[1]].target
+$Y2 = $rows[$boundaries[0]..$boundaries[1]].actual
 
 if ($X.Count -le 1) {write-warning "One or fewer points to plot"}
 else {
 
-	$Chart.Series["Data"].Points.DataBindXY($X, $Y)
+	$Chart.Series["Target"].Points.DataBindXY($X, $Y1)
+	$Chart.Series["Actual"].Points.DataBindXY($X, $Y2)
 
 	[void]$Chart.Titles.Add($Label) 
 	$ChartArea.AxisX.Title = "Time (sec)" 
 	$ChartArea.AxisY.Title = "Velocity"
 	$ChartArea.AxisX.LabelStyle.Format = "0.###"
+
+	$Legend = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
+	$Chart.Legends.Add($Legend)
+	$Chart.Legends[0].Docking = "Bottom"
+	$Chart.Legends[0].Font = (New-Object System.Drawing.Font -ArgumentList "Segui", "12")
+	$Chart.Legends[0].Alignment = "Center"
 
 	$Form = New-Object Windows.Forms.Form
 	$Form.Text = $Label
@@ -57,6 +65,6 @@ else {
 	$Form.Height = 600
 	$Form.controls.add($Chart)
 	$Form.Add_Shown({$Form.Activate()})
-	$Form.ShowDialog()
+	$dontcare = $Form.ShowDialog()
 	
 	}
