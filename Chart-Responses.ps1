@@ -38,33 +38,40 @@ $Chart.Series["Actual"].ChartType = [System.Windows.Forms.DataVisualization.Char
 $Chart.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right -bor [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
 $Chart.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right -bor  [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left
 
-$X = $rows[$boundaries[0]..$boundaries[1]].sec
-$Y1 = $rows[$boundaries[0]..$boundaries[1]].target
-$Y2 = $rows[$boundaries[0]..$boundaries[1]].actual
+[void]$Chart.Titles.Add($Label) 
+$ChartArea.AxisX.Title = "Time (sec)" 
+$ChartArea.AxisY.Title = "Velocity"
+$ChartArea.AxisX.LabelStyle.Format = "0.###"
 
-if ($X.Count -le 1) {write-warning "One or fewer points to plot"}
-else {
+$Legend = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
+$Chart.Legends.Add($Legend)
+$Chart.Legends[0].Docking = "Bottom"
+$Chart.Legends[0].Font = (New-Object System.Drawing.Font -ArgumentList "Segui", "12")
+$Chart.Legends[0].Alignment = "Center"
 
-	$Chart.Series["Target"].Points.DataBindXY($X, $Y1)
-	$Chart.Series["Actual"].Points.DataBindXY($X, $Y2)
+for ($i = 0; $i -lt $boundaries.Count; $i += 2) {
 
-	[void]$Chart.Titles.Add($Label) 
-	$ChartArea.AxisX.Title = "Time (sec)" 
-	$ChartArea.AxisY.Title = "Velocity"
-	$ChartArea.AxisX.LabelStyle.Format = "0.###"
+	if ($i -eq $boundaries.Count+1) {write-warning "odd number of boundaries"}
+	else {
 
-	$Legend = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
-	$Chart.Legends.Add($Legend)
-	$Chart.Legends[0].Docking = "Bottom"
-	$Chart.Legends[0].Font = (New-Object System.Drawing.Font -ArgumentList "Segui", "12")
-	$Chart.Legends[0].Alignment = "Center"
+		$X = $rows[$boundaries[$i]..$boundaries[$i+1]].sec
+		$Y1 = $rows[$boundaries[$i]..$boundaries[$i+1]].target
+		$Y2 = $rows[$boundaries[$i]..$boundaries[$i+1]].actual
 
-	$Form = New-Object Windows.Forms.Form
-	$Form.Text = $Label
-	$Form.Width = 600
-	$Form.Height = 600
-	$Form.controls.add($Chart)
-	$Form.Add_Shown({$Form.Activate()})
-	$dontcare = $Form.ShowDialog()
-	
+		if ($X.Count -le 1 -or $Y1.Count -le 1 -or $Y2.Count -le 1) {write-warning "One or fewer points to plot"}
+		else {
+
+			$Chart.Series["Target"].Points.DataBindXY($X, $Y1)
+			$Chart.Series["Actual"].Points.DataBindXY($X, $Y2)
+
+			$Form = New-Object Windows.Forms.Form
+			$Form.Text = $Label
+			$Form.Width = 600
+			$Form.Height = 600
+			$Form.controls.add($Chart)
+			$Form.Add_Shown({$Form.Activate()})
+			$dontcare = $Form.ShowDialog()
+			
+			}
+		}
 	}
