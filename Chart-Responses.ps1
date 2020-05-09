@@ -3,6 +3,8 @@
 Use windows chart controls to plot score velocity response from log data
 .DESCRIPTION
 Using a log file from HardwareRevStationCoreHex, plot the target velocity and actual velocity
+Pull the log file with:
+    adb pull /sdcard/FIRST/DataLogger/VelocitiesRight.csv
 .PARAMETER FileName
 CSV log file from Android (using DataLogger class)
 .PARAMETER Rows
