@@ -5,6 +5,9 @@ Use windows chart controls to plot score velocity response from log data
 Using a log file from HardwareRevStationCoreHex, plot the target velocity and actual velocity
 Pull the log file with:
     adb pull /sdcard/FIRST/DataLogger/VelocitiesRight.csv
+Find path to adb by checking Tools>SDK Manager in Android Studio, and add platform-tools,
+for example:
+	\Users\VEX\AppData\Local\Android\Sdk\platform-tools
 .PARAMETER FileName
 CSV log file from Android (using DataLogger class)
 .PARAMETER Rows
