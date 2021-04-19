@@ -36,6 +36,11 @@ for ($i=0; $i -lt $Rows.Length-1; $i++) {
 		$boundaries += $i
 		}
 	}
+if ($boundaries.Count -eq 0) {
+	write-warning "Zero boundaries found; using whole file"
+	$boundaries += 0
+	$boundaries += $Rows.Length-1
+}
 
 # Prepare chart
 
